@@ -1,0 +1,103 @@
+---
+title: "Iris dataset tasks"
+author: "Agata Zając"
+format: html
+editor: visual
+---
+
+## Task 1
+
+First, I loaded necessary packages that I'm gonna use for the following tasks:
+
+```{r}
+library(tidyr)
+library(dplyr)
+```
+
+Here, I transform the iris.csv dataset from a wide format to a long format using `pivot_longer()` function from the tidyr package.
+
+-   `cols = -species` - means all columns except `species` will be reshaped,
+
+-   `names_to = "trait"` - the column names (`sepal_length`, `petal_width`, etc.) will go into a new column named `"trait",`
+
+-   `values_to = "size"` - the actual measurement values will go into a new column named `"size",`
+
+-   `View(iris_long)` - just shows the created long version of the table.
+
+```{r}
+iris <- read.csv("iris.csv")
+iris_long <- iris %>%
+  pivot_longer(cols = -species, names_to = "trait", values_to = "size")
+
+View(iris_long)
+```
+
+## Task 2.1
+
+Below, I calculate the mean of each measurement for each species.
+
+-   `group_by(species)` - groups the data by species, so that the following summarize() is done separately for each species,
+
+-   `summarize(...)` - creates a new summarized table with all the calculated means,
+
+-   `mean(...)` - calculates the average of a set of numeric values.
+
+```{r}
+iris %>%
+  group_by(species) %>%
+  summarize(mean_sepal_length = mean(sepal_length),
+            mean_sepal_width  = mean(sepal_width),
+            mean_petal_length = mean(petal_length),
+            mean_petal_width  = mean(petal_width))
+```
+
+**OUTPUT:**
+
+![](images/clipboard-2879899117.png)
+
+## Task 2.2
+
+This command below checks the largest and widest petals and sepals of virgnica and versicolor species.
+
+-   `filter(species %in% c("versicolor", "virginica"))` - keeps only the rows where the species is either `"versicolor"` or `"virginica"`,
+
+-   `group_by(species)` - groups the filtered data by species, so that the following summarize() is done separately for each species,
+
+-   `summarize(...) and max(..)` - calculates the maximum of each measurement within each species group.
+
+```{r}
+iris %>%
+  filter(species %in% c("versicolor", "virginica")) %>%
+  group_by(species) %>%
+  summarize(widest_sepal = max(sepal_width),
+            largest_sepal = max(sepal_length),
+            widest_petal = max(petal_width),
+            largest_petal = max(petal_length))
+```
+
+**OUTPUT:**
+
+![](images/clipboard-107179556.png)
+
+## Task 2.3
+
+Here, I check how many observations for each species are above the mean.
+
+-   `group_by(species, trait)` - groups the data by species and trait,
+
+-   `mutate(mean_value = mean(size))` - adds a new column called `mean_value` for each group, which is the mean of the size values within that group,
+
+-   `summarize(obs_above_mean = sum(size > mean_value)...)` - counts how many values in that group are above the mean and adds up all the TRUE values,
+
+-   `.groups = "drop"` - ungroups the result afterward to keep the data clean.
+
+```{r}
+iris_long %>%
+  group_by(species, trait) %>%
+  mutate(mean_value = mean(size)) %>%
+  summarize(obs_above_mean = sum(size > mean_value), .groups = "drop")
+```
+
+**OUTPUT:**
+
+![](images/clipboard-721456550.png)
